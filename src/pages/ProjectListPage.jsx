@@ -77,52 +77,65 @@ export default function ProjectListPage() {
           overflowX: "hidden"
         }}
       >
-        {/* Hero Section */}
-        <div className="projects-hero-card">
-          <h1 className="hero-headline">Welcome back,</h1>
-          <h1 className="hero-name">{displayName}!</h1>
-          <div className="hero-caption">
-            View detailed financial data for your assigned projects only
+        <div className="main-content">
+          {/* Hero Section */}
+          <div className="projects-hero-card">
+            <h1 className="hero-headline">Welcome back,</h1>
+            <h1 className="hero-name">{displayName}!</h1>
+            <div className="hero-caption">
+              View detailed financial data for your assigned projects only
+            </div>
           </div>
-        </div>
 
-        {/* Projects List Section */}
-        <div className="projects-list-container">
-          <h2 className="projects-title">Your Projects</h2>
-          {projects.length === 0 ? (
-            <div>No projects assigned.</div>
-          ) : (
-            <div className="projects-grid">
-              {projects.map((row, idx) => {
-                const project = row.projects || {};
-                return (
-                  <div className="project-vertical-card" key={row.project_id || idx}>
-                    <div className="project-image-wrap">
-                      <img
-                        src={project.image_url}
-                        alt={project.name}
-                        className="project-image"
-                      />
-                    </div>
-                    <div className="project-card-body">
-                      {project.location && (
-                        <div className="project-location">{project.location}</div>
-                      )}
-                      <div className="project-name">
+          {/* Projects List Section */}
+          <div className="projects-list-container">
+            <h2 className="projects-title">Your Projects</h2>
+            {projects.length === 0 ? (
+              <div>No projects assigned.</div>
+            ) : (
+              <div className="projects-grid">
+                {projects.map((row, idx) => {
+                  const project = row.projects || {};
+                  return (
+                    <div className="project-vertical-card" key={row.project_id || idx}>
+                      <div className="project-image-wrap">
                         {project.slug ? (
-                          <Link to={`/projects/${project.slug}`} style={{ color: "#167164", textDecoration: "none" }}>
-                            {project.name || "Unnamed Project"}
+                          <Link to={`/projects/${project.slug}`}>
+                            <img
+                              src={project.image_url}
+                              alt={project.name}
+                              className="project-image"
+                              style={{ cursor: "pointer" }}
+                            />
                           </Link>
                         ) : (
-                          project.name || "Unnamed Project"
+                          <img
+                            src={project.image_url}
+                            alt={project.name}
+                            className="project-image"
+                          />
                         )}
                       </div>
+                      <div className="project-card-body">
+                        {project.location && (
+                          <div className="project-location">{project.location}</div>
+                        )}
+                        <div className="project-name">
+                          {project.slug ? (
+                            <Link to={`/projects/${project.slug}`} style={{ color: "#167164", textDecoration: "none" }}>
+                              {project.name || "Unnamed Project"}
+                            </Link>
+                          ) : (
+                            project.name || "Unnamed Project"
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
