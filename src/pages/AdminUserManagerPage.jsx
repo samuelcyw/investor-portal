@@ -1,33 +1,36 @@
-import { useEffect, useState } from 'react';
-import Header from '../components/Header';
+import { useEffect, useState } from "react";
+import { supabase } from "../supabase";  // Make sure this import is correct
+import Header from "../components/Header";
 
 export default function AdminUserManagerPage() {
-  const [users, setUsers] = useState([]);
+  const [investors, setInvestors] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/admin-users/list')
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch users');
-        return res.json();
-      })
-      .then((data) => {
-        setUsers(data.users || []);
-      })
-      .catch((err) => {
-        setError(err.message);
-      });
+    async function fetchInvestors() {
+      const { data, error } = await supabase
+        .from("investors")
+        .select("id, email");
+      if (error) {
+        setError(error.message);
+        setInvestors([]);
+      } else {
+        setInvestors(data || []);
+        setError(null);
+      }
+    }
+    fetchInvestors();
   }, []);
 
   return (
     <>
       <Header />
       <div>
-        <h1>Admin Users</h1>
+        <h1>Investor Users</h1>
         {error && <p>Error: {error}</p>}
         <ul>
-          {users.map((u) => (
-            <li key={u.id}>{u.email}</li>
+          {investors.map((inv) => (
+            <li key={inv.id}>{inv.email}</li>
           ))}
         </ul>
       </div>
