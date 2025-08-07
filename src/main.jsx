@@ -5,7 +5,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import ProjectListPage from './pages/ProjectListPage';
 import ProjectDetailPage from './pages/ProjectDetailPage';
-import AdminAssignProjectsPage from './pages/AdminAssignProjectsPage';
+import AdminUserManagerPage from './pages/AdminUserManagerPage'; // <-- NEW
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -15,7 +15,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/login" element={<LoginPage />} />
         <Route path="/projects" element={<ProjectListPage />} />
         <Route path="/projects/:slug" element={<ProjectDetailPage />} />
-        <Route path="/admin/assign-projects" element={<AdminAssignProjectsPage />} />
+        <Route path="/admin-users" element={<AdminUserManagerPage />} /> {/* <-- NEW */}
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
