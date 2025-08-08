@@ -24,6 +24,7 @@ export default function AdminUserManagerPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  // Gate by admins table
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -34,28 +35,30 @@ export default function AdminUserManagerPage() {
     })();
   }, [navigate]);
 
+  // Load investors + projects
   useEffect(() => {
     if (!isAdmin) return;
     (async () => {
       setLoading(true); setError("");
-      const [{ data: investorList, error: invErr }, { data: projectList, error: projErr }] =
-        await Promise.all([
-          supabase.from("investors").select("id, email"),
-          supabase.from("projects").select("id, name"),
-        ]);
+      const [{ data: inv, error: invErr }, { data: pro, error: proErr }] = await Promise.all([
+        supabase.from("investors").select("id, email"),
+        supabase.from("projects").select("id, name"),
+      ]);
       if (invErr) setError(invErr.message);
-      if (projErr) setError((e) => e || projErr.message);
-      setInvestors(investorList || []);
-      setProjects(projectList || []);
+      if (proErr) setError((e) => e || proErr.message);
+      setInvestors(inv || []);
+      setProjects(pro || []);
       setLoading(false);
     })();
   }, [isAdmin]);
 
+  // Load assignments when investor selected
   useEffect(() => {
     if (!selectedInvestor) { setAssignments([]); return; }
     (async () => {
       const { data, error } = await supabase
-        .from("investor_projects").select("project_id")
+        .from("investor_projects")
+        .select("project_id")
         .eq("investor_id", selectedInvestor.id);
       if (error) { setError(error.message); setAssignments([]); }
       else setAssignments((data || []).map(r => r.project_id));
@@ -67,30 +70,29 @@ export default function AdminUserManagerPage() {
     setInvestors(data || []);
   }
 
+  // Add user (Auth + mirror to investors table)
   async function handleAddInvestor(e) {
     e.preventDefault(); setError(""); setAdding(true);
     try {
-      const { data: signData, error: signErr } = await supabase.auth.signUp({
-        email: newEmail, password: newPassword,
-      });
+      const { data: sign, error: signErr } = await supabase.auth.signUp({ email: newEmail, password: newPassword });
       if (signErr) throw signErr;
-      const uid = signData?.user?.id;
+      const uid = sign?.user?.id;
       if (!uid) throw new Error("Sign-up succeeded but user id missing.");
       const { error: insErr } = await supabase.from("investors").insert([{ id: uid, email: newEmail }]);
       if (insErr) throw insErr;
       await refreshInvestors();
       setNewEmail(""); setNewPassword("");
-      alert("Investor created. They’ll confirm via email (if enabled).");
+      alert("Investor created (they may need to confirm via email).");
     } catch (err) { setError(err.message); }
     finally { setAdding(false); }
   }
 
+  // Edit investor (profile only)
   async function handleSaveEdit(e) {
     e.preventDefault(); if (!editing) return;
     setSavingEdit(true); setError("");
     try {
-      const { error: updErr } = await supabase
-        .from("investors").update({ email: editEmail }).eq("id", editing.id);
+      const { error: updErr } = await supabase.from("investors").update({ email: editEmail }).eq("id", editing.id);
       if (updErr) throw updErr;
       await refreshInvestors();
       setEditing(null); setEditEmail("");
@@ -98,21 +100,26 @@ export default function AdminUserManagerPage() {
     finally { setSavingEdit(false); }
   }
 
+  // Assign/unassign projects
   async function toggleAssignment(projectId) {
     if (!selectedInvestor) return; setBusy(true);
     try {
       if (assignments.includes(projectId)) {
         const { error } = await supabase
-          .from("investor_projects").delete()
-          .eq("investor_id", selectedInvestor.id).eq("project_id", projectId);
+          .from("investor_projects")
+          .delete()
+          .eq("investor_id", selectedInvestor.id)
+          .eq("project_id", projectId);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from("investor_projects").insert([{ investor_id: selectedInvestor.id, project_id: projectId }]);
+          .from("investor_projects")
+          .insert([{ investor_id: selectedInvestor.id, project_id: projectId }]);
         if (error) throw error;
       }
       const { data } = await supabase
-        .from("investor_projects").select("project_id")
+        .from("investor_projects")
+        .select("project_id")
         .eq("investor_id", selectedInvestor.id);
       setAssignments((data || []).map(r => r.project_id));
     } catch (err) { setError(err.message); }
@@ -128,7 +135,7 @@ export default function AdminUserManagerPage() {
       <Header />
       <div style={{ padding: 24, maxWidth: 900, margin: "0 auto", fontFamily: "Inter, Arial, sans-serif" }}>
         <h2>Investor Management</h2>
-        {error && <div style={{ color: "#b91c1c", marginTop: 8 }}>{error}</div>}
+        {error && <div style={{ color: "#b91c1c", margin: "8px 0" }}>{error}</div>}
 
         {/* Add investor */}
         <form onSubmit={handleAddInvestor} style={{ margin: "16px 0", display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -181,7 +188,9 @@ export default function AdminUserManagerPage() {
                 </li>
               ))}
             </ul>
-            <button onClick={() => setSelectedInvestor(null)} style={{ marginTop: 8, padding: "6px 10px" }}>Done</button>
+            <button onClick={() => setSelectedInvestor(null)} style={{ marginTop: 8, padding: "6px 10px" }}>
+              Done
+            </button>
           </div>
         )}
       </div>
