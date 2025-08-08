@@ -1,8 +1,8 @@
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
-import Header from "../components/Header"; // Import the header
-import "./ProjectListPage.css"; // Use the same CSS for consistent background
+import Header from "../components/Header";
+import "./ProjectListPage.css";
 
 const bgImage =
   "https://www.dropbox.com/scl/fi/2cakary1eo1oo5t9w2v5r/10f0f8fb-ce2d-49cf-9adf-823e6864d64b.png?rlkey=dy3as4hu7gr77p5c62fh0y6lt&st=pqh63tzr&raw=1";
@@ -12,6 +12,7 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     async function fetchProject() {
@@ -32,6 +33,20 @@ export default function ProjectDetailPage() {
     }
     fetchProject();
   }, [slug]);
+
+  // Admin check
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setIsAdmin(false); return; }
+      const { data } = await supabase
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .single();
+      setIsAdmin(!!data);
+    })();
+  }, []);
 
   if (loading)
     return (
@@ -73,6 +88,24 @@ export default function ProjectDetailPage() {
             className="projects-hero-card"
             style={{ maxWidth: 600, margin: "36px auto 0 auto" }}
           >
+            {isAdmin && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+                <Link
+                  to="/admin-users"
+                  style={{
+                    background: "#167164",
+                    color: "#fff",
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    textDecoration: "none",
+                    fontWeight: 700
+                  }}
+                >
+                  Admin
+                </Link>
+              </div>
+            )}
+
             {/* Project Image */}
             {project.image_url && (
               <div
@@ -110,7 +143,6 @@ export default function ProjectDetailPage() {
             <div style={{ margin: "1em 0", color: "#444" }}>
               {project.description}
             </div>
-            {/* Add more fields if you have them */}
           </div>
         </div>
       </div>
