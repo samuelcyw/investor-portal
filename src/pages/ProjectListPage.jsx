@@ -12,7 +12,6 @@ export default function ProjectListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     async function fetchProjects() {
@@ -41,20 +40,6 @@ export default function ProjectListPage() {
       setLoading(false);
     }
     fetchProjects();
-  }, []);
-
-  // Admin check
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setIsAdmin(false); return; }
-      const { data } = await supabase
-        .from("admins")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .single();
-      setIsAdmin(!!data);
-    })();
   }, []);
 
   const displayName =
@@ -100,23 +85,6 @@ export default function ProjectListPage() {
             <div className="hero-caption">
               View detailed financial data for your assigned projects only
             </div>
-
-            {isAdmin && (
-              <div style={{ marginTop: 12 }}>
-                <Link
-                  to="/admin-users"
-                  style={{
-                    background: "#167164",
-                    color: "#fff",
-                    padding: "8px 12px",
-                    borderRadius: 6,
-                    textDecoration: "none",
-                    fontWeight: 700
-                  }}
-                >
-                  Admin
-                </Link>
-              </div>
             )}
           </div>
 
