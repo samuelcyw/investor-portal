@@ -85,7 +85,6 @@ export default function ProjectListPage() {
             <div className="hero-caption">
               View detailed financial data for your assigned projects only
             </div>
-            )}
           </div>
 
           {/* Projects List Section */}
